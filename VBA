@@ -33,7 +33,31 @@ End Sub
 通过ReDim语句重新制定它的大小。
 
 Function:
-Cells.ClearContents
-ScreenUpdating = False #excel 不会把计算结果显示到屏幕上
+Cells.ClearContents  Rem‘清除表格内容
+Application.ScreenUpdating = False #excel Rem不会把计算结果显示到屏幕上
 
+’删除工作表
+Sub Delsht()
+	Dim sht As Worksheet
+	Application.ScreenUpdating = False
+	For Each sht In Worksheets
+		If sht.Name <> ActiveSheet.Name Then 
+			Sht.Delete
+		End If
+	Next
+	Application.ScreenUpdating = True
+End Sub
 
+‘新建工作表
+Worksheets.Add
+Worksheets.Add before:=Worksheets(1)
+Worksheets.Add after:=Worksheets(1)
+Worksheets.Add Count:=3 '插入多张工作表
+
+Sub ShtAdd()
+	Worksheets.Add after:=Worksheets(Worksheets.count),count:=3
+	ActiveSheet.Name='工资表'
+End Sub
+
+'更改工作表的标签名称
+Worksheets(2).Name:='工资表’
