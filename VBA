@@ -1,0 +1,39 @@
+强制声明变量
+Option Explicit
+
+声明变量
+Public
+Private
+Static
+
+单个过程： 使用Dim或Static，只有声明变量的语句所在的过程可以使用它，称本地变量。
+单个模块：在模块第一个过程之前使用Dim或private，作用域为声明变量的语句所在模块里的所有过程，即该模块里所有的过程都可以使用它，称模块级变量
+所有模块：Public 作用域为所有模块
+
+常量也需要声明：指定常量的名称，数据类型以及常量赋值
+Const 变量名称 As 数据类型 = 数值
+
+
+数组：
+Public | Dim 数组名( a to b) As 数据类型
+# 确定数组个数为b-a+1
+
+
+Option Base 1： 数组索引号为1 
+
+Sub sztest_2()
+	Dim arr (1-10) as Integer, i as Integer
+	For i = 1 To 10
+	arrr(i) = i
+	Next
+End Sub
+
+声明动态数组
+	Dim 数组名称()
+通过ReDim语句重新制定它的大小。
+
+Function:
+Cells.ClearContents
+ScreenUpdating = False #excel 不会把计算结果显示到屏幕上
+
+
