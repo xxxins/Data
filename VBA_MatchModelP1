@@ -1,0 +1,165 @@
+Public Sub IMDataMSYN()
+'Get all model names into arrModelName
+Set reportwb = Workbooks("TargetModel.xlsx") # 选取页面
+Set reportsh = reportwb.Sheets("Data") #选取数据
+
+
+Dim rowmax, colmax  #定义行数和列数
+                    #得到最大的行数和列数
+rowmax = reportsh.Range("a65536").End(xlUp).Row 
+                    # 第65535行往上找到已經使用過的單元格，從而得到編輯區域的下邊界
+colmax = reportsh.Range("IV1").End(xlToLeft).Column
+                    # xlDown就是向下查找。xlToLeft是向左查找
+
+
+Dim arrModelName() As String     # dim：定义一个固定维数的数组
+ReDim arrModelName(1 To rowmax)  #redim：重新定义动态数组的维数，必须先用dim定义一个动态数组
+
+For i = 1 To rowmax
+   arrModelName(i) = reportsh.Cells(i, 1).Value # 模型名字=第一列每一行的值
+Next
+
+Dim flagForAdd As Boolean
+flagForAdd = False
+Dim rowForAdd
+rowForAdd = rowmax + 5
+
+Ar = ActiveCell.Row # 指定单元格的行数
+ac = ActiveCell.Column #指定单元格的列数
+For j = Ar To 10000  #起始行开始
+
+If Len(Cells(j, ac)) > 0 Then
+
+# 在SOH表中寻找model
+ Set rng = reportsh.Columns("A:A").Find(What:=Cells(j, ac), LookIn:=xlFormulas _
+        , LookAt:=xlWhole, SearchOrder:=xlByRows, SearchDirection:=xlNext, _
+        MatchCase:=False, SearchFormat:=False)
+
+
+#<单元格区域>.find（what，[after],[LookIn],[LookAt],[SearchOrder],_
+#                    ,SearchDirection],[MatchCase],[MatchByte],[SearchFormat]
+
+  If rng Is Nothing Then
+    If InStr(1, Cells(j, ac + 1).Value, "KIT", vbTextCompare) > 0 Then
+
+
+
+# Start是一個可選的參數。指定搜索的起始位置。搜索從左到右並從第一位置開始
+# InStr 函數返回另一個字符串中的一個字符串的第一次出現。從左向右搜索。
+# String1, 必需的參數。要搜索的字符串
+# String2, 必需的參數。字符串對其中String1搜索
+Compare是一個可選的參數。指定字符串比較中使用。它可以采用下述值：
+0 = vbBinaryCompare - 執行二進製比較（默認）
+1 = vbTextCompare - 執行文本比較
+
+
+
+
+' Contain Kit
+     For i = 1 To rowmax
+     If InStr(1, arrModelName(i), "KIT", vbTextCompare) > 0 Then
+     sr = Trim(Replace(arrModelName(i), "KIT", ""))
+     # Replace函数替换字符串的指定部分与特定字符串指定次数。
+
+     If InStr(1, Cells(j, ac + 1).Value, sr, vbTextCompare) > 0 Then 
+     #将所有包含kit匹配到的字符的三列都放到SOH文件中
+      reportsh.Cells(i, colmax + 1) = Cells(j, ac).Value 
+      reportsh.Cells(i, colmax + 2) = Cells(j, ac + 1).Value
+
+      If Len(reportsh.Cells(i, colmax + 3)) = 0 Then
+      reportsh.Cells(i, colmax + 3) = Cells(j, ac + 2).Value
+      Else
+      reportsh.Cells(i, colmax + 3) = reportsh.Cells(i, colmax + 3) + Cells(j, ac + 2).Value
+      End If
+     
+       'reportsh.Cells(i, colmax + 4) = j
+      flagForAdd = True
+     
+      Exit For
+      End If
+     End If
+     Next
+
+    Else
+
+
+
+' not Contain Kit
+    For i = 1 To rowmax
+    If InStr(1, Cells(j, ac + 1).Value, arrModelName(i) & " ", vbTextCompare) > 0 Then
+     reportsh.Cells(i, colmax + 1) = Cells(j, ac).Value
+     reportsh.Cells(i, colmax + 2) = Cells(j, ac + 1).Value
+      
+     If Len(reportsh.Cells(i, colmax + 3)) = 0 Then
+     reportsh.Cells(i, colmax + 3) = Cells(j, ac + 2).Value
+     Else
+     reportsh.Cells(i, colmax + 3) = reportsh.Cells(i, colmax + 3) + Cells(j, ac + 2).Value
+     End If
+     
+
+     ' reportsh.Cells(i, colmax + 4) = j
+      flagForAdd = True
+      Exit For
+      End If
+      
+  
+   Next
+ 
+  End If
+
+
+'''''''''''''''''''''''''
+   Else
+       reportsh.Cells(rng.Row, colmax + 1) = Cells(j, ac)
+       reportsh.Cells(rng.Row, colmax + 2) = Cells(j, ac + 1)
+       
+      If Len(reportsh.Cells(rng.Row, colmax + 3)) = 0 Then
+      reportsh.Cells(rng.Row, colmax + 3) = Cells(j, ac + 2).Value
+      Else
+      reportsh.Cells(rng.Row, colmax + 3) = reportsh.Cells(rng.Row, colmax + 3) + Cells(j, ac + 2).Value
+      End If
+     
+       'reportsh.Cells(Rng.Row, colmax + 4) = j 'row num
+       flagForAdd = True
+  End If
+
+If flagForAdd = False Then
+  rowForAdd = rowForAdd + 1
+      reportsh.Cells(rowForAdd, 1) = Cells(j, ac).Value
+      reportsh.Cells(rowForAdd, colmax + 1) = Cells(j, ac).Value
+      reportsh.Cells(rowForAdd, colmax + 2) = Cells(j, ac + 1).Value
+      
+      If Len(reportsh.Cells(rowForAdd, colmax + 3)) = 0 Then
+      reportsh.Cells(rowForAdd, colmax + 3) = Cells(j, ac + 2).Value
+      Else
+      reportsh.Cells(rowForAdd, colmax + 3) = reportsh.Cells(rowForAdd, colmax + 3) + Cells(j, ac + 2).Value
+      End If
+      
+    '  reportsh.Cells(rowForAdd, colmax + 4) = j
+  End If
+
+  flagForAdd = False
+
+
+Else
+Exit For
+
+End If
+Next
+
+
+End Sub
+
+
+#单元格区域 返回一个range对象
+# what 要查找的数据
+# after 指定开始查找的位置 (选)
+# lookin 指定查找范围类型。 常量之一：xlValues、xlFormulas或者xlComments。默认值为xlFormulas
+# lookat 常量之一：XlWhole或者xlPart 用来指定所查找的数据是与单元格内容完全匹配还是部分匹配，默认值为xlPart
+# SearchOrder 确定如何在单元格区域中进行查找，是以行(xlByRows)，还是以列(xlByColumns)，默认值为xlByRows
+# SearchDirection 查找的方向，即是向前查找(XlPrevious)还是向后查找(xlNext)，默认的是向后查找。
+# MatchCase 若该参数值为True，则在查找时区分大小写。默认值为False
+# MatchByte 是否区分全角或半角
+# SearchFormat 指定一个确切类型的查找格式 当设置带有相应格式的查找时，该参数值为True
+
+'''''''''''''''''''''''''
